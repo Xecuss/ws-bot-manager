@@ -1,0 +1,22 @@
+{
+  "name": "ws-bot-manager",
+  "version": "0.0.1",
+  "description": "Xs-bot的前置子项目，该项目为一个分布式websocket-bot管理器。",
+  "main": "./dist/index.js",
+  "scripts": {
+    "test": "tsc && node ./dist/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Xecuss/ws-bot-manager.git"
+  },
+  "author": "Xs！",
+  "license": "GPL-3.0-or-later",
+  "bugs": {
+    "url": "https://github.com/Xecuss/ws-bot-manager/issues"
+  },
+  "homepage": "https://github.com/Xecuss/ws-bot-manager#readme",
+  "devDependencies": {
+    "typescript": "^3.8.3"
+  }
+}
