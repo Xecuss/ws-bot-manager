@@ -17,6 +17,11 @@
   },
   "homepage": "https://github.com/Xecuss/ws-bot-manager#readme",
   "devDependencies": {
+    "@types/node": "^13.11.0",
+    "@types/ws": "^7.2.3",
     "typescript": "^3.8.3"
+  },
+  "dependencies": {
+    "ws": "^7.2.3"
   }
 }
