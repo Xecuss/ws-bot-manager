@@ -7,6 +7,9 @@ Xs-bot的前置子项目，该项目为一个分布式websocket-bot管理器。
 - [ ] 将实体bot连接抽象成逻辑bot
 - [ ] 隐藏下层不同类型bot的api具体实现，向上层提供统一的调用API
 
+## 框架
+<img src="./doc/V5 Baking.jpg"/>
+
 ## 使用
 to do
 
