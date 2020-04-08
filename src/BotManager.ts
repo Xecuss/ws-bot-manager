@@ -21,6 +21,7 @@ export default class BotManager extends EventEmitter{
         this.s.shouldHandle = this.verify.bind(this);
         this.argVerify = args.verify;
         this.port = args.port;
+        this.bindOnConnection(this.s);
     }
 
     private verify(req: http.IncomingMessage): boolean{
@@ -35,9 +36,20 @@ export default class BotManager extends EventEmitter{
         return false;
     }
 
+    private bindOnMessage(ws: Websocket){
+        ws.on('message', (msg) => {
+            console.log(msg);
+        })
+    }
+
+    private bindOnConnection(ws: Websocket.Server){
+        ws.on('connection', (ws) => {
+            this.bindOnMessage(ws);
+        });
+    }
+
     public listen(){
         this.httpServer.listen(this.port);
     }
-
     
 }
