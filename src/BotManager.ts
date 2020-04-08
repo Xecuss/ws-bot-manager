@@ -7,6 +7,7 @@ export default class BotManager extends EventEmitter{
     private s: Websocket.Server;
     private httpServer: http.Server;
     private argVerify: (req: http.IncomingMessage) => IBotVerifyResult;
+    private port: number;
 
     constructor(args: IBotManagerConfig){
         super();
@@ -17,8 +18,9 @@ export default class BotManager extends EventEmitter{
             server: this.httpServer
         });
         //覆写默认的upgrade处理
-        this.s.shouldHandle = this.verify;
+        this.s.shouldHandle = this.verify.bind(this);
         this.argVerify = args.verify;
+        this.port = args.port;
     }
 
     private verify(req: http.IncomingMessage): boolean{
@@ -31,6 +33,10 @@ export default class BotManager extends EventEmitter{
             return true;
         }
         return false;
+    }
+
+    public listen(){
+        this.httpServer.listen(this.port);
     }
 
     
