@@ -1,7 +1,10 @@
 import { EventEmitter } from 'events';
 import { IBotManagerConfig, IBotVerifyResult } from './interface/IBotManagerConfig';
+import { IBotDriver } from './interface/IBotDriver';
 import Websocket from 'ws';
 import http from 'http';
+
+const driverList: Array<IBotDriver> = [];
 
 export default class BotManager extends EventEmitter{
     private s: Websocket.Server;
@@ -25,8 +28,6 @@ export default class BotManager extends EventEmitter{
     }
 
     private verify(req: http.IncomingMessage): boolean{
-        //todo, 验证是否为已知的bot种类
-
         let res = this.argVerify(req);
         if(res.success){
             let groupToken = res.token;
@@ -42,8 +43,13 @@ export default class BotManager extends EventEmitter{
         })
     }
 
-    private bindOnConnection(ws: Websocket.Server){
-        ws.on('connection', (ws) => {
+    private bindOnConnection(wss: Websocket.Server){
+        wss.on('connection', (ws, req) => {
+            for(let item of driverList){
+                if(item.canUse(req)){
+                    //为token分配driver
+                }
+            }
             this.bindOnMessage(ws);
         });
     }
