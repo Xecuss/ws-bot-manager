@@ -13,4 +13,8 @@ export default class PhysicalBot{
         this.connection = ws;
         this.driver = driver;
     }
+
+    async call(args: any): Promise<any>{
+        return await this.driver.callAPI(this.connection, args);
+    }
 }
