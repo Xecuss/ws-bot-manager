@@ -1,7 +1,10 @@
+import { IncomingMessage } from 'http';
+
 export interface IBotManagerConfig{
-    port: number;
-    logger: IBotManagerConsole;
-    verify(req: any): IBotVerifyResult;
+    port: number; //端口号
+    logger: IBotManagerConsole; //使用日志，如果需要去掉日志可以实现空的log、error、warn方法
+    verify(req: IncomingMessage): boolean; //校验，创建连接时进行校验
+    getGroup(req: IncomingMessage): string; //获取分组，返回现有token表示该bot分配到现有逻辑bot上，返回空表示分配一个新的逻辑bot
 }
 
 export interface IBotManagerConsole{
@@ -9,14 +12,3 @@ export interface IBotManagerConsole{
     warn(str: any): void;
     error(str: any): void;
 }
-
-interface IBotVerifySuccessResult{
-    success: true;
-    token: string;
-}
-
-interface IBotVerifyFailResult{
-    success: false;
-}
-
-export type IBotVerifyResult = IBotVerifyFailResult | IBotVerifySuccessResult;
