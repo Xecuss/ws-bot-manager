@@ -10,4 +10,8 @@ export default class LogicBot{
     constructor(token: string){
         this.token = token;
     }
+
+    public async setBot(bot: PhysicalBot): Promise<void> {
+        //to do 设置一个物理bot
+    }
 }

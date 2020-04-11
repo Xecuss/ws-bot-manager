@@ -4,6 +4,7 @@ import { IBotDriver } from './interface/IBotDriver';
 import Websocket from 'ws';
 import http from 'http';
 import LogicBot from './lib/LogicBot';
+import PhysicalBot from './lib/PhysicalBot';
 
 const driverList: Array<IBotDriver> = [];
 
@@ -37,19 +38,30 @@ export default class BotManager extends EventEmitter{
         return res;
     }
 
-    private bindOnMessage(ws: Websocket){
-        ws.on('message', (msg) => {
-            console.log(msg);
-        })
-    }
-
     private bindOnConnection(wss: Websocket.Server){
         wss.on('connection', (ws, req) => {
-
+            let physicalBot = null;
+            //寻找可用驱动创建物理bot
             for(let item of driverList){
                 if(item.canUse(req)){
-                    //为token分配driver
+                    physicalBot = new PhysicalBot(ws, item);
+                    break;
                 }
+            }
+
+            if(physicalBot === null) {
+                console.error('无法处理的连接请求：无对应驱动');
+                ws.close();
+                return;
+            }
+
+            try{
+                let logicbot = this.allocBot(req);
+                logicbot.setBot(physicalBot);
+            }
+            catch(e){
+                console.error(e);
+                ws.close();
             }
         });
     }
@@ -72,7 +84,7 @@ export default class BotManager extends EventEmitter{
     }
 
     private generateToken(): string{
-        //to do 生成逻辑bot token 
+        //to do 生成逻辑bot token
         return '123';
     }
 
