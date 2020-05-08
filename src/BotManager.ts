@@ -6,7 +6,9 @@ import http from 'http';
 import LogicBot from './lib/LogicBot';
 import PhysicalBot from './lib/PhysicalBot';
 
-const driverList: Array<IBotDriver> = [];
+import TestDriver from './driver/test.driver';
+
+const driverList: Array<IBotDriver> = [new TestDriver()];
 
 export default class BotManager extends EventEmitter{
     private s: Websocket.Server;
