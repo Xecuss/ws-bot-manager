@@ -1,7 +1,7 @@
 import { IStructMessageItem, IBotGroupMessage, IBotPrivateMessage } from './IBotMessage';
 
 export interface IGroupMsgEvent{
-    type: 'group_message';
+    type: 'group-message';
     data: IBotGroupMessage
 }
 export interface IPrivateMsgEvent{

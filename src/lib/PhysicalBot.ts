@@ -22,7 +22,8 @@ export default class PhysicalBot extends EventEmitter{
         return await this.driver.callAPI(this.connection, args);
     }
 
-    private onMessageHandle(e: Websocket.MessageEvent): void{
-        this.driver.procEvent(e.data);
+    private async onMessageHandle(e: Websocket.MessageEvent): Promise<void>{
+        let event = await this.driver.procEvent(e.data);
+        this.emit(event.type, event);
     }
 }

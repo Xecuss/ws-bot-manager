@@ -1,6 +1,9 @@
 import { IBotDriver } from '../interface/IBotDriver';
 import Http from 'http';
 import WebSocket from 'ws';
+import { IBotEvent } from '../interface/IBotEvent';
+
+let id = 0;
 
 export default class TestDriver implements IBotDriver{
     public id: string = 'test';
@@ -19,7 +22,24 @@ export default class TestDriver implements IBotDriver{
         ws.send(args);
     }
 
-    public procEvent(data: any): any{
+    public async procEvent(data: any): Promise<IBotEvent>{
         console.log(data);
+        return {
+            type: 'group-message',
+            data: {
+                group_id: 'test',
+                sender: {
+                    user_id: 'test',
+                    user_name: 'test',
+                    role: 'normal'
+                },
+                message_id: (id++).toString(),
+                message: [{
+                    type: 'text',
+                    text: data.toString()
+                }],
+                type: 'message'
+            }
+        };
     }
 }

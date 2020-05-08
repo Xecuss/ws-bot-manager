@@ -39,7 +39,7 @@ export interface IGroupMessageSender{
     role: 'normal' | 'admin' | 'owner'; //暂列三级权限，如果需要更多的权限等级之后再添加
     nick?: string;
     avator?: string;
-    extra: any; //其他额外的信息添加到这里
+    extra?: any; //其他额外的信息添加到这里
 }
 
 export interface IBotGroupMessage{
@@ -47,7 +47,7 @@ export interface IBotGroupMessage{
     message_id: string;
     message: Array<IStructMessageItem>;
     type: 'message' | 'notice';
-    extra: any;
+    extra?: any;
     sender: IGroupMessageSender;
 }
 
@@ -56,13 +56,13 @@ export interface IPrivateMessageSender{
     user_name: string;
     nick?: string;
     avator?: string;
-    extra: any; //其他额外的信息添加到这里
+    extra?: any; //其他额外的信息添加到这里
 }
 
 export interface IBotPrivateMessage{
     message_id: string;
     message: Array<IStructMessageItem>;
     type: 'message' | 'notice';
-    extra: any;
+    extra?: any;
     sender: IPrivateMessageSender;
 }
