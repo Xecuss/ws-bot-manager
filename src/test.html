@@ -6,9 +6,13 @@
     </head>
     <body>
         <div id="app">
+            {{message}}
             <button @click="connect" style="margin: 10px auto;" v-if="!connStatus">connect</button>
             <button @click="disconnect" style="margin: 10px auto;" v-if="connStatus">disconnect</button>
-            {{message}}
+            <div id="main" v-if="connStatus">
+                <textarea v-model="sendData" rows="10" cols="50"></textarea>
+                <button @click="sendMsg" style="margin: 10px auto;">Send</button>
+            </div>
         </div>
     </body>
     <script>
@@ -16,8 +20,9 @@
         let ws = null;
         const App = {
             setup(){
-                let message = ref('Hello New World!');
+                let message = ref('No Connection');
                 let connStatus = ref(false);
+                let sendData = ref('');
 
                 function connect(){
                     ws = new WebSocket('ws://localhost:3388');
@@ -32,11 +37,18 @@
                     ws = null;
                 }
 
+                function sendMsg(){
+                    ws && ws.send(sendData.value);
+                    sendData.value = '';
+                }
+
                 return {
                     message,
                     connStatus,
                     connect,
-                    disconnect
+                    disconnect,
+                    sendData,
+                    sendMsg
                 };
             }
         }
@@ -46,6 +58,7 @@
         *{
             margin: 0;
             padding: 0;
+            font-size: 16px;
         }
         #app{
             box-sizing: border-box;
@@ -55,12 +68,15 @@
             width: 100%;
             height: 100%;
             text-align: center;
-            font-size: 16px;
             padding: 20px;
         }
         button{
             padding: 5px 10px;
             display: block;
+        }
+        textarea{
+            padding: 10px;
+            font-family: 'PingFang', 'Microsoft Yahei UI';
         }
     </style>
 </html>

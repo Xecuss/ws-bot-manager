@@ -16,6 +16,7 @@ export default class PhysicalBot extends EventEmitter{
         this.driver = driver;
         
         this.connection.onmessage = this.onMessageHandle.bind(this);
+        this.connection.onclose = this.onCloseHandle.bind(this);
     }
 
     async call(args: any): Promise<any>{
@@ -25,5 +26,10 @@ export default class PhysicalBot extends EventEmitter{
     private async onMessageHandle(e: Websocket.MessageEvent): Promise<void>{
         let event = await this.driver.procEvent(e.data);
         this.emit(event.type, event);
+    }
+
+    private async onCloseHandle(e: Websocket.CloseEvent): Promise<void>{
+        console.log('connection close!');
+        this.emit('close');
     }
 }
