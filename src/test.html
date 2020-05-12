@@ -20,21 +20,46 @@
         let ws = null;
         const App = {
             setup(){
-                let message = ref('No Connection');
+                let message = ref('未连接');
                 let connStatus = ref(false);
                 let sendData = ref('');
 
+                function msgHandle(e){
+                    let data = JSON.parse(e.data);
+                    if(data.opt == 'get_group_list'){
+                        let res = {
+                            echo: data.echo,
+                            list: ['test1', 'test2']
+                        };
+                        ws.send(JSON.stringify(res));
+                    }
+                    else{
+                        console.log(data);
+                    }
+                }
+
                 function connect(){
-                    ws = new WebSocket('ws://localhost:3388');
-                    message.value = 'Connect Success!';
-                    connStatus.value = true;
+                    ws = new WebSocket('ws://localhost:3388', 'TEST-WS');
+                    ws.onopen = () => {
+                        message.value = '连接成功!';
+                        connStatus.value = true;
+                    };
+
+                    ws.onclose = () => {
+                        message.value = '连接断开';
+                        connStatus.value = false;
+                        ws = null;
+                    };
+
+                    ws.onerror = (e) => {
+                        alert('连接出错！');
+                    }
+
+                    ws.onmessage = msgHandle;
                 }
 
                 function disconnect(){
                     ws && ws.close();
-                    message.value = 'disConnect Success!';
-                    connStatus.value = false;
-                    ws = null;
                 }
 
                 function sendMsg(){

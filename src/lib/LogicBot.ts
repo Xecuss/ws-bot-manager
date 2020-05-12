@@ -13,5 +13,7 @@ export default class LogicBot{
 
     public async setBot(bot: PhysicalBot): Promise<void> {
         //to do 设置一个物理bot
+        let groupList = await bot.getGroupList();
+        console.log(groupList.join('\n'));
     }
 }

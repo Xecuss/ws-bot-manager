@@ -2,7 +2,6 @@ import BotManager from './BotManager';
 import { IncomingMessage } from 'http';
 
 function verify(req: IncomingMessage): boolean {
-    console.log(req.headers);
     return true;
 }
 
