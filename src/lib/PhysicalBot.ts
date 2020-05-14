@@ -9,6 +9,7 @@ import { EventEmitter } from 'events';
 export default class PhysicalBot extends EventEmitter{
     private connection: Websocket;
     private driver: IBotDriver;
+    private id: number = 0;
 
     constructor(ws: Websocket, driver: IBotDriver){
         super();
@@ -19,11 +20,15 @@ export default class PhysicalBot extends EventEmitter{
         this.connection.onclose = this.onCloseHandle.bind(this);
     }
 
+    public setId(id: number){
+        this.id = id;
+    }
+
     async call(args: any): Promise<any>{
         return await this.driver.callAPI(this.connection, args);
     }
 
-    public async getGroupList(): Promise<any>{
+    public async getGroupList(): Promise<string[]>{
         return await this.driver.getGroupList(this.connection);
     }
 
