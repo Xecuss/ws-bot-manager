@@ -65,7 +65,7 @@ export default class TestDriver implements IBotDriver{
         return [];
     }
 
-    public async procEvent(data: any): Promise<IBotEvent>{
+    public async procEvent(data: any, botId: number): Promise<IBotEvent>{
         return {
             type: 'group-message',
             data: {
@@ -81,7 +81,8 @@ export default class TestDriver implements IBotDriver{
                     text: data.toString()
                 }],
                 type: 'message'
-            }
+            },
+            botId
         };
     }
 }

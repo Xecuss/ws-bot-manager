@@ -24,6 +24,10 @@ export default class PhysicalBot extends EventEmitter{
         this.id = id;
     }
 
+    public getId(): number{
+        return this.id;
+    }
+
     async call(args: any): Promise<any>{
         return await this.driver.callAPI(this.connection, args);
     }
@@ -45,8 +49,8 @@ export default class PhysicalBot extends EventEmitter{
             this.driver.procResponse(data);
         }
         else{
-            let event = await this.driver.procEvent(data);
-            this.emit(event.type, event);
+            let event = await this.driver.procEvent(data, this.id);
+            this.emit('event', event);
         }
     }
 
