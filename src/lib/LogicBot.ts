@@ -32,6 +32,10 @@ export default class LogicBot extends EventEmitter{
         LogicBot._Logger = Logger;
     }
 
+    public getToken(): string{
+        return this.token;
+    }
+
     //这个方法测试该event是否需要被emit
     private shouldEventEmit(e: IBotEvent): boolean{
         switch(e.type){
@@ -73,24 +77,22 @@ export default class LogicBot extends EventEmitter{
     private async unsetBot(bot: PhysicalBot): Promise<void>{}
 
     public async setBot(bot: PhysicalBot): Promise<void> {
-        //to do 设置一个物理bot
         //设置物理botId，方便寻找bot
         let pId = LogicBot.phyId++;
         bot.setId(pId);
         this.idBotMap.set(pId, bot);
-        console.log(`设置物理bot id: ${pId}`);
+        this.Logger.log(`设置物理bot id: ${pId}`);
         //获取群列表，将bot添加到对应群调用bot列表尾部
         let groupList = await bot.getGroupList();
         for(let group of groupList){
             let botList = this.defaultBotMap.get(group);
             if(botList === undefined){
-                this.defaultBotMap.set(group, []);
                 botList = [];
+                this.defaultBotMap.set(group, botList);
             }
             botList.push(bot);
         }
         //绑定botEvent
         bot.on('event', this.procEvent.bind(this));
-        console.log(groupList.join('\n'));
     }
 }

@@ -69,7 +69,7 @@ export default class TestDriver implements IBotDriver{
         return {
             type: 'group-message',
             data: {
-                group_id: 'test',
+                group_id: 'test1',
                 sender: {
                     user_id: 'test',
                     user_name: 'test',

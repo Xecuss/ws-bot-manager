@@ -60,6 +60,7 @@ export default class BotManager extends EventEmitter{
             try{
                 let logicbot = this.allocBot(req);
                 logicbot.setBot(physicalBot);
+                this.emit('logic-bot-connect', logicbot.getToken());
             }
             catch(e){
                 console.error(e);
@@ -71,23 +72,16 @@ export default class BotManager extends EventEmitter{
     private allocBot(req: http.IncomingMessage): LogicBot{
         let res = this.getGroup(req);
 
-        if(res === ''){
-            let token: string = this.generateToken(),
+        let logicbot = this.tokenMap.get(res);
+
+        if(!logicbot){
+            let token: string = res,
                 logicbot = new LogicBot(token);
             this.tokenMap.set(token, logicbot);
             return logicbot;
-        }
-
-        let logicbot = this.tokenMap.get(res);
-
-        if(!logicbot) throw new Error(`指定Token(${res})不存在！`);
+        };
 
         return logicbot;
-    }
-
-    private generateToken(): string{
-        //to do 生成逻辑bot token
-        return '123';
     }
 
     public listen(){
