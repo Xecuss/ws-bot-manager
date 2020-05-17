@@ -68,20 +68,7 @@ export default class TestDriver implements IBotDriver{
     public async procEvent(data: any, botId: number): Promise<IBotEvent>{
         return {
             type: 'group-message',
-            data: {
-                group_id: 'test1',
-                sender: {
-                    user_id: 'test',
-                    user_name: 'test',
-                    role: 'normal'
-                },
-                message_id: (id++).toString(),
-                message: [{
-                    type: 'text',
-                    text: data.toString()
-                }],
-                type: 'message'
-            },
+            data,
             botId
         };
     }

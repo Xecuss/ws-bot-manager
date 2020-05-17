@@ -10,26 +10,47 @@
             <button @click="connect" style="margin: 10px auto;" v-if="!connStatus">connect</button>
             <button @click="disconnect" style="margin: 10px auto;" v-if="connStatus">disconnect</button>
             <div id="main" v-if="connStatus">
+                <div class="fromGroup">
+                    来源群: 
+                    <select v-model="fromGroup">
+                        <option v-for="(item, index) in groups" :key="index" :value="item">{{item}}</option>
+                    </select>
+                </div>
                 <textarea v-model="sendData" rows="10" cols="50"></textarea>
                 <button @click="sendMsg" style="margin: 10px auto;">Send</button>
+            </div>
+            <div id="setting">
+                <div class="setting-block">
+                    群列表<br/>
+                    <textarea v-model="groupList" rows="10" cols="50"></textarea>
+                </div>
             </div>
         </div>
     </body>
     <script>
-        const {createApp, ref} = Vue;
+        const {createApp, ref, computed} = Vue;
         let ws = null;
         const App = {
             setup(){
                 let message = ref('未连接');
                 let connStatus = ref(false);
                 let sendData = ref('');
+                let groupList = ref(`["test1", "test2"]`);
+
+                let groups = computed(() => {
+                    return JSON.parse(groupList.value);
+                });
+
+                let fromGroup = ref(groups[0]);
+
+                let id = 1;
 
                 function msgHandle(e){
                     let data = JSON.parse(e.data);
                     if(data.opt == 'get_group_list'){
                         let res = {
                             echo: data.echo,
-                            list: ['test1', 'test2']
+                            list: JSON.parse(groupList.value)
                         };
                         ws.send(JSON.stringify(res));
                     }
@@ -63,17 +84,33 @@
                 }
 
                 function sendMsg(){
-                    ws && ws.send(sendData.value);
+                    ws && ws.send(JSON.stringify({
+                        group_id: fromGroup.value,
+                        sender: {
+                            user_id: 'test',
+                            user_name: 'test',
+                            role: 'normal'
+                        },
+                        message_id: (id++).toString(),
+                        message: [{
+                            type: 'text',
+                            text: sendData.value
+                        }],
+                        type: 'message'
+                    }));
                     sendData.value = '';
                 }
 
                 return {
+                    fromGroup,
+                    groups,
                     message,
                     connStatus,
                     connect,
                     disconnect,
                     sendData,
-                    sendMsg
+                    sendMsg,
+                    groupList
                 };
             }
         }
@@ -102,6 +139,13 @@
         textarea{
             padding: 10px;
             font-family: 'PingFang', 'Microsoft Yahei UI';
+            margin-top: 10px;
+        }
+        #setting{
+            border-top: 1px solid gray;
+        }
+        .setting-block{
+            float: left;
         }
     </style>
 </html>
