@@ -3,11 +3,11 @@
  * 每一个实例相当于一个逻辑Bot
  */
 import PhysicalBot from './PhysicalBot';
-import { EventEmitter } from 'events';
+import { TypedEvent } from './TypedEvent';
 import { IBotEvent } from '../interface/IBotEvent';
 import { IBotManagerConsole } from '../interface/IBotManagerConfig';
 
-export default class LogicBot extends EventEmitter{
+export default class LogicBot extends TypedEvent<string, IBotEvent>{
     private token: string;
     //phyId为每个物理bot分配的id
     static phyId = 1;
@@ -34,7 +34,7 @@ export default class LogicBot extends EventEmitter{
 
     public getToken(): string{
         return this.token;
-    }
+    } 
 
     //这个方法测试该event是否需要被emit
     private shouldEventEmit(e: IBotEvent): boolean{
@@ -71,6 +71,10 @@ export default class LogicBot extends EventEmitter{
     //具体的处理event的方法
     private procEvent(e: IBotEvent): void{
         let shouldEmit = this.shouldEventEmit(e);
+        if(shouldEmit){
+            e.token = this.token;
+            this.emit(e.type, e);
+        }
     }
 
     //当物理bot失去连接时，需要unset

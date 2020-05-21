@@ -11,4 +11,10 @@ export interface IPrivateMsgEvent{
     botId: number;
 }
 
-export type IBotEvent = IGroupMsgEvent | IPrivateMsgEvent;
+interface LogicBotEvent{
+    token: string;
+}
+
+export type IBotRawEvent = IGroupMsgEvent | IPrivateMsgEvent;
+
+export type IBotEvent = IBotRawEvent & LogicBotEvent;
