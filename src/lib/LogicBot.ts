@@ -4,10 +4,11 @@
  */
 import PhysicalBot from './PhysicalBot';
 import { TypedEvent } from './TypedEvent';
-import { IBotEvent } from '../interface/IBotEvent';
+import { IBotRawEvent } from '../class/IBotRawEvent';
 import { IBotManagerConsole } from '../interface/IBotManagerConfig';
+import { IGroupMsgEvent } from '../class/IBotEvent';
 
-export default class LogicBot extends TypedEvent<string, IBotEvent>{
+export default class LogicBot{
     private token: string;
     //phyId为每个物理bot分配的id
     static phyId = 1;
@@ -18,8 +19,10 @@ export default class LogicBot extends TypedEvent<string, IBotEvent>{
     //分配id与bot的对应关系
     private idBotMap: Map<number, PhysicalBot> = new Map();
 
+    //eventEmitter
+    public groupMsgEmitter = new TypedEvent<IGroupMsgEvent>();
+
     constructor(token: string){
-        super();
         this.token = token;
     }
 
@@ -37,7 +40,7 @@ export default class LogicBot extends TypedEvent<string, IBotEvent>{
     } 
 
     //这个方法测试该event是否需要被emit
-    private shouldEventEmit(e: IBotEvent): boolean{
+    private shouldEventEmit(e: IBotRawEvent): boolean{
         switch(e.type){
             //通过群号判断的部分
             case 'group-message': {
@@ -69,11 +72,15 @@ export default class LogicBot extends TypedEvent<string, IBotEvent>{
     }
 
     //具体的处理event的方法
-    private procEvent(e: IBotEvent): void{
+    private procEvent(e: IBotRawEvent): void{
         let shouldEmit = this.shouldEventEmit(e);
         if(shouldEmit){
-            e.token = this.token;
-            this.emit(e.type, e);
+            switch(e.type){
+                case 'group-message': {
+                    this.groupMsgEmitter.emit()
+                    break;
+                }
+            }
         }
     }
 

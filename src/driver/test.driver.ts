@@ -1,7 +1,7 @@
 import { IBotDriver } from '../interface/IBotDriver';
 import Http from 'http';
 import WebSocket from 'ws';
-import { IBotEvent } from '../interface/IBotEvent';
+import { IBotRawEvent } from '../class/IBotRawEvent';
 import { EventEmitter } from 'events';
 
 let id = 0;
@@ -65,7 +65,7 @@ export default class TestDriver implements IBotDriver{
         return [];
     }
 
-    public async procEvent(data: any, botId: number): Promise<IBotEvent>{
+    public async procEvent(data: any, botId: number): Promise<IBotRawEvent>{
         return {
             type: 'group-message',
             data,
