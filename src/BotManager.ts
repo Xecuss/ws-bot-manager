@@ -1,4 +1,4 @@
-import { EventEmitter } from 'events';
+import { TypedEvent } from './lib/TypedEvent';
 import { IBotManagerConfig } from './interface/IBotManagerConfig';
 import { IBotDriver } from './interface/IBotDriver';
 import Websocket from 'ws';
@@ -10,7 +10,7 @@ import TestDriver from './driver/test.driver';
 
 const driverList: Array<IBotDriver> = [new TestDriver()];
 
-export default class BotManager extends EventEmitter{
+export default class BotManager{
     private s: Websocket.Server;
     private httpServer: http.Server;
     private argVerify: (req: http.IncomingMessage) => boolean;
@@ -18,8 +18,10 @@ export default class BotManager extends EventEmitter{
     private port: number;
     private tokenMap: Map<string, LogicBot> = new Map();
 
+    //event emitter
+    public connectEmitter = new TypedEvent();
+
     constructor(args: IBotManagerConfig){
-        super();
         //创建一个自定义的http Server以实现延后的监听
         this.httpServer = new http.Server();
 
@@ -60,7 +62,7 @@ export default class BotManager extends EventEmitter{
             try{
                 let logicbot = this.allocBot(req);
                 logicbot.setBot(physicalBot);
-                this.emit('logic-bot-connect', logicbot.getToken());
+                this.connectEmitter.emit('logic-bot-connect', logicbot.getToken());
             }
             catch(e){
                 console.error(e);
@@ -68,6 +70,23 @@ export default class BotManager extends EventEmitter{
             }
         });
     }
+
+    //在这里对逻辑bot emit的event进行区分
+    /*private procEvent(e: IBotEvent): void{
+        let shouldEmit = this.shouldEventEmit(e);
+        if(shouldEmit){
+            switch(e.type){
+                case 'group-message': {
+                    this.groupMsgEmitter.emit(this.addToken(e));
+                    break;
+                }
+                case 'private-message': {
+                    this.privateMsgEmitter.emit(this.addToken(e));
+                    break;
+                }
+            }
+        }
+    }*/
 
     private allocBot(req: http.IncomingMessage): LogicBot{
         let res = this.getGroup(req);

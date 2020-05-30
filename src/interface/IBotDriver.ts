@@ -1,6 +1,6 @@
 import { IncomingMessage } from 'http';
 import WebSocket from 'ws';
-import { IBotRawEvent } from '../class/IBotRawEvent';
+import { IBotEvent } from '../interface/IBotEvent';
 
 export interface IBotDriver{
     //driver id，用于寻找driver
@@ -14,7 +14,7 @@ export interface IBotDriver{
     //处理调用返回值
     procResponse(data: any): any;
     //转化event
-    procEvent(data: any, botId: number): Promise<IBotRawEvent>;
+    procEvent(data: any, botId: number): Promise<IBotEvent>;
     //获取群列表，如果没有群或者无法获取，应返回一个空数组
     //返回一个群id数组
     getGroupList(ws: WebSocket): Promise<string[]>;
