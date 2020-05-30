@@ -7,6 +7,8 @@ import LogicBot from './lib/LogicBot';
 import PhysicalBot from './lib/PhysicalBot';
 
 import TestDriver from './driver/test.driver';
+import { IBotInnerEvent } from './interface/IBotInnerEvent';
+import { IGroupMsgEvent, IPrivateMsgEvent, IBotGroupListChangeEvent } from './interface/IBotEvent';
 
 const driverList: Array<IBotDriver> = [new TestDriver()];
 
@@ -19,7 +21,10 @@ export default class BotManager{
     private tokenMap: Map<string, LogicBot> = new Map();
 
     //event emitter
-    public connectEmitter = new TypedEvent();
+    public innerEventEmitter = new TypedEvent<IBotInnerEvent>();
+    public groupMsgEmitter = new TypedEvent<IGroupMsgEvent>();
+    public privateMsgEmitter = new TypedEvent<IPrivateMsgEvent>();
+    public groupListChangeEmitter = new TypedEvent<IBotGroupListChangeEvent>();
 
     constructor(args: IBotManagerConfig){
         //创建一个自定义的http Server以实现延后的监听
@@ -62,7 +67,6 @@ export default class BotManager{
             try{
                 let logicbot = this.allocBot(req);
                 logicbot.setBot(physicalBot);
-                this.connectEmitter.emit('logic-bot-connect', logicbot.getToken());
             }
             catch(e){
                 console.error(e);
@@ -71,22 +75,26 @@ export default class BotManager{
         });
     }
 
-    //在这里对逻辑bot emit的event进行区分
-    /*private procEvent(e: IBotEvent): void{
-        let shouldEmit = this.shouldEventEmit(e);
-        if(shouldEmit){
+    //分离具体类型的Event
+    private bindLogicBotEvent(bot: LogicBot){
+        bot.on((e) => {
             switch(e.type){
                 case 'group-message': {
-                    this.groupMsgEmitter.emit(this.addToken(e));
+                    this.groupMsgEmitter.emit(e);
                     break;
                 }
                 case 'private-message': {
-                    this.privateMsgEmitter.emit(this.addToken(e));
+                    this.privateMsgEmitter.emit(e);
                     break;
                 }
+                case 'bot-group-list-change': {
+                    this.groupListChangeEmitter.emit(e);
+                    break;
+                }
+                default: { let checkUp: never; }
             }
-        }
-    }*/
+        });
+    }
 
     private allocBot(req: http.IncomingMessage): LogicBot{
         let res = this.getGroup(req);
@@ -97,6 +105,15 @@ export default class BotManager{
             let token: string = res,
                 logicbot = new LogicBot(token);
             this.tokenMap.set(token, logicbot);
+
+            //分配新bot时产生bot-connect事件
+            this.innerEventEmitter.emit({
+                type: 'bot-connect',
+                token: logicbot.getToken()
+            });
+
+            this.bindLogicBotEvent(logicbot);
+
             return logicbot;
         };
 
