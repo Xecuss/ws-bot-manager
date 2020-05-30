@@ -55,7 +55,6 @@ export default class PhysicalBot extends EventEmitter{
     }
 
     private async onCloseHandle(e: Websocket.CloseEvent): Promise<void>{
-        console.log('connection close!');
-        this.emit('close');
+        this.emit('close', this);
     }
 }

@@ -5,14 +5,14 @@
 import PhysicalBot from './PhysicalBot';
 import { TypedEvent } from './TypedEvent';
 import { IBotManagerConsole } from '../interface/IBotManagerConfig';
-import { IGroupMsgEvent, IBotEvent, IBaseEvent, IPrivateMsgEvent } from '../interface/IBotEvent';
+import { IBotEvent, IBotGroupChangeData, IBotGroupListChangeEvent } from '../interface/IBotEvent';
 
 export default class LogicBot extends TypedEvent<IBotEvent>{
     private token: string;
     //phyId为每个物理bot分配的id
     static phyId = 1;
     //日志记录
-    static _Logger: IBotManagerConsole;
+    private _Logger!: IBotManagerConsole;
     //defaultBotMap记录每个群的默认bot
     private defaultBotMap: Map<string, PhysicalBot[]> = new Map();
     //分配id与bot的对应关系
@@ -24,12 +24,12 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
     }
 
     private get Logger(): IBotManagerConsole{
-        if(LogicBot._Logger) return LogicBot._Logger;
+        if(this._Logger) return this._Logger;
         else return console;
     }
 
     public setLogger(Logger: IBotManagerConsole){
-        LogicBot._Logger = Logger;
+        this._Logger = Logger;
     }
 
     public getToken(): string{
@@ -82,13 +82,49 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
     }
 
     //当物理bot失去连接时，需要unset
-    private async unsetBot(bot: PhysicalBot): Promise<void>{}
+    private async unsetBot(bot: PhysicalBot): Promise<void>{
+        let pId = bot.getId();
+        this.Logger.log(`物理bot ${pId} 连接断开，将会被移除`);
+        let groupChangeList: IBotGroupChangeData = {
+            add: [],
+            remove: [],
+            switch: []
+        };
+
+        for(let [group, item] of this.defaultBotMap){
+            let botIdx = item.indexOf(bot);
+            if(botIdx === 0){
+                item.shift();
+                if(item.length > 0) groupChangeList.switch.push(group);
+                else groupChangeList.remove.push(group);
+            }
+            else if(botIdx > 0){
+                item.splice(botIdx, 1);
+            }
+        }
+
+        let e: IBotGroupListChangeEvent = {
+            token: '',
+            botId: pId,
+            type: 'bot-group-list-change',
+            data: groupChangeList
+        };
+
+        this.emit(this.addToken(e));
+    }
 
     public async setBot(bot: PhysicalBot): Promise<void> {
         //设置物理botId，方便寻找bot
         let pId = LogicBot.phyId++;
         bot.setId(pId);
-        this.idBotMap.set(pId, bot);
+
+        let groupChangeList: IBotGroupChangeData = {
+            add: [],
+            remove: [],
+            switch: []
+        };
+
+        this.idBotMap.set(pId, bot); 
         this.Logger.log(`设置物理bot id: ${pId}`);
         //获取群列表，将bot添加到对应群调用bot列表尾部
         let groupList = await bot.getGroupList();
@@ -99,8 +135,20 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
                 this.defaultBotMap.set(group, botList);
             }
             botList.push(bot);
+            //新接入bot时新增的可用群
+            if(botList.length === 1) groupChangeList.add.push(group);
         }
+        let e: IBotGroupListChangeEvent = {
+            token: '',
+            botId: pId,
+            type: 'bot-group-list-change',
+            data: groupChangeList
+        };
+        this.emit(this.addToken(e));
         //绑定botEvent
         bot.on('event', this.procEvent.bind(this));
+        bot.on('close', (bot: PhysicalBot) => {
+            this.unsetBot(bot);
+        });
     }
 }

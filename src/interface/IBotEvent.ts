@@ -16,7 +16,7 @@ export interface IPrivateMsgEvent extends IBaseEvent{
     data: IBotPrivateMessage;
 }
 
-interface IBotGroupChangeData{
+export interface IBotGroupChangeData{
     add: Array<string>;
     remove: Array<string>;
     switch: Array<string>;

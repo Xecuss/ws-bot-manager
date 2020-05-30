@@ -1,5 +1,5 @@
 import { TypedEvent } from './lib/TypedEvent';
-import { IBotManagerConfig } from './interface/IBotManagerConfig';
+import { IBotManagerConfig, IBotManagerConsole } from './interface/IBotManagerConfig';
 import { IBotDriver } from './interface/IBotDriver';
 import Websocket from 'ws';
 import http from 'http';
@@ -19,6 +19,7 @@ export default class BotManager{
     private getGroup: (req: http.IncomingMessage) => string;
     private port: number;
     private tokenMap: Map<string, LogicBot> = new Map();
+    private Logger: IBotManagerConsole;
 
     //event emitter
     public innerEventEmitter = new TypedEvent<IBotInnerEvent>();
@@ -38,6 +39,7 @@ export default class BotManager{
 
         this.argVerify = args.verify;
         this.getGroup = args.getGroup;
+        this.Logger = args.logger;
         this.port = args.port;
         this.bindOnConnection(this.s);
     }
@@ -59,7 +61,7 @@ export default class BotManager{
             }
 
             if(physicalBot === null) {
-                console.error('无法处理的连接请求：无对应驱动');
+                this.Logger.error('无法处理的连接请求：无对应驱动');
                 ws.close();
                 return;
             }
@@ -69,7 +71,7 @@ export default class BotManager{
                 logicbot.setBot(physicalBot);
             }
             catch(e){
-                console.error(e);
+                this.Logger.error(e);
                 ws.close();
             }
         });
@@ -111,6 +113,8 @@ export default class BotManager{
                 type: 'bot-connect',
                 token: logicbot.getToken()
             });
+
+            logicbot.setLogger(this.Logger);
 
             this.bindLogicBotEvent(logicbot);
 
