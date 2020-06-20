@@ -6,11 +6,21 @@ import http from 'http';
 import LogicBot from './lib/LogicBot';
 import PhysicalBot from './lib/PhysicalBot';
 
-import TestDriver from './driver/test.driver';
 import { IBotInnerEvent } from './interface/IBotInnerEvent';
 import { IGroupMsgEvent, IPrivateMsgEvent, IBotGroupListChangeEvent } from './interface/IBotEvent';
 
-const driverList: Array<IBotDriver> = [new TestDriver()];
+const driverList: Array<IBotDriver> = [];
+const loadedDriver: Set<string> = new Set();
+
+async function loadDriver(list: string[]){
+    for(let path of list){
+        if(!loadedDriver.has(path)){
+            let Driver = await import(path);
+            driverList.push(new Driver.default());
+            loadedDriver.add(path);
+        }
+    }
+}
 
 export default class BotManager{
     private s: Websocket.Server;
@@ -28,6 +38,8 @@ export default class BotManager{
     public groupListChangeEmitter = new TypedEvent<IBotGroupListChangeEvent>();
 
     constructor(args: IBotManagerConfig){
+        //加载驱动
+        loadDriver(args.drivers);
         //创建一个自定义的http Server以实现延后的监听
         this.httpServer = new http.Server();
 

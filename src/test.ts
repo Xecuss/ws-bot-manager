@@ -15,7 +15,8 @@ let bot = new BotManager({
     port: 3388,
     logger: console,
     verify,
-    getGroup
+    getGroup,
+    drivers: ['./driver/test.driver']
 });
 
 bot.innerEventEmitter.on(e => {
