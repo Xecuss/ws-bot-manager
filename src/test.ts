@@ -1,4 +1,4 @@
-import BotManager from './BotManager';
+import BotManager from './index';
 import { IncomingMessage } from 'http';
 
 let mainToken = 'TestBot';

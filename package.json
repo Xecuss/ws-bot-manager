@@ -4,7 +4,11 @@
   "description": "Xs-bot的前置子项目，该项目为一个分布式websocket-bot管理器。",
   "main": "./dist/index.js",
   "scripts": {
-    "test": "tsc && node ./dist/test.js"
+    "prepare": "npm run rebuild",
+    "build": "tsc",
+    "rebuild": "npm run clean && npm run build",
+    "test": "tsc && node ./dist/test.js",
+    "clean": "rm -rf build"
   },
   "repository": {
     "type": "git",
@@ -12,16 +16,17 @@
   },
   "author": "Xs！",
   "license": "SEE LICENSE IN LICENSE",
+  "types": "build/index.d.ts",
   "bugs": {
     "url": "https://github.com/Xecuss/ws-bot-manager/issues"
   },
   "homepage": "https://github.com/Xecuss/ws-bot-manager#readme",
   "devDependencies": {
     "@types/node": "^13.11.0",
-    "@types/ws": "^7.2.3",
     "typescript": "^3.8.3"
   },
   "dependencies": {
-    "ws": "^7.2.3"
+    "ws": "^7.2.3",
+    "@types/ws": "^7.2.3"
   }
 }
