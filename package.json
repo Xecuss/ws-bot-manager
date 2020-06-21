@@ -16,7 +16,7 @@
   },
   "author": "Xs！",
   "license": "SEE LICENSE IN LICENSE",
-  "types": "build/index.d.ts",
+  "types": "dist/index.d.ts",
   "bugs": {
     "url": "https://github.com/Xecuss/ws-bot-manager/issues"
   },
