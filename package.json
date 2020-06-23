@@ -1,6 +1,6 @@
 {
   "name": "ws-bot-manager",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "Xs-bot的前置子项目，该项目为一个分布式websocket-bot管理器。",
   "main": "./dist/index.js",
   "scripts": {
