@@ -14,7 +14,7 @@ export interface IBotDriver{
     //处理调用返回值
     procResponse(data: any): any;
     //转化event
-    procEvent(data: any, botId: number): Promise<IBotEvent>;
+    procEvent(data: any, botId: number): Promise<IBotEvent | null>;
     //获取群列表，如果没有群或者无法获取，应返回一个空数组
     //返回一个群id数组
     getGroupList(ws: WebSocket): Promise<string[]>;

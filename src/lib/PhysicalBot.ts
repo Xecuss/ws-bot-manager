@@ -50,7 +50,8 @@ export default class PhysicalBot extends EventEmitter{
         }
         else{
             let event = await this.driver.procEvent(data, this.id);
-            this.emit('event', event);
+            //驱动可以返回null表示该event无需emit
+            if(event !== null)  this.emit('event', event);
         }
     }
 
