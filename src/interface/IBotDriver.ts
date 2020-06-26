@@ -1,6 +1,7 @@
 import { IncomingMessage } from 'http';
 import WebSocket from 'ws';
 import { IBotEvent } from '../interface/IBotEvent';
+import { ISendMessageResponse, IStructMessageItem } from './IBotMessage';
 
 export interface IBotDriver{
     //driver id，用于寻找driver
@@ -18,4 +19,8 @@ export interface IBotDriver{
     //获取群列表，如果没有群或者无法获取，应返回一个空数组
     //返回一个群id数组
     getGroupList(ws: WebSocket): Promise<string[]>;
+    //发送群消息
+    sendGroupMsg(ws: WebSocket, target: string, msg: IStructMessageItem[]): Promise<ISendMessageResponse>;
+    //发送私聊消息
+    sendPrivateMsg(ws: WebSocket, target: string, msg: IStructMessageItem[]): Promise<ISendMessageResponse>;
 }

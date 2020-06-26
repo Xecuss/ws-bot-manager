@@ -3,6 +3,7 @@ import Http from 'http';
 import WebSocket from 'ws';
 import { IBotEvent } from '../interface/IBotEvent';
 import { EventEmitter } from 'events';
+import { IStructMessageItem, ISendMessageResponse } from '../interface/IBotMessage';
 
 let id = 0;
 
@@ -72,5 +73,12 @@ export default class TestDriver implements IBotDriver{
             botId,
             token: ''
         };
+    }
+
+    sendGroupMsg(ws: WebSocket, target: string, msg: IStructMessageItem[]): Promise<ISendMessageResponse> {
+        throw new Error("Method not implemented.");
+    }
+    sendPrivateMsg(ws: WebSocket, target: string, msg: IStructMessageItem[]): Promise<ISendMessageResponse> {
+        throw new Error("Method not implemented.");
     }
 }

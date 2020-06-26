@@ -48,7 +48,7 @@ export interface IBotGroupMessage{
     message: Array<IStructMessageItem>;
     type: 'message' | 'notice';
     extra?: any;
-    sender: IGroupMessageSender;
+    sender: IGroupMessageSender ;
 }
 
 export interface IPrivateMessageSender{
@@ -65,4 +65,9 @@ export interface IBotPrivateMessage{
     type: 'message' | 'notice';
     extra?: any;
     sender: IPrivateMessageSender;
+}
+
+export interface ISendMessageResponse{
+    success: boolean;
+    message_id?: string;
 }

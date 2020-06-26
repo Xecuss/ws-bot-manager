@@ -6,6 +6,7 @@ import PhysicalBot from './PhysicalBot';
 import { TypedEvent } from './TypedEvent';
 import { IBotManagerConsole } from '../interface/IBotManagerConfig';
 import { IBotEvent, IBotGroupChangeData, IBotGroupListChangeEvent } from '../interface/IBotEvent';
+import { IStructMessageItem, ISendMessageResponse } from '../interface/IBotMessage';
 
 export default class LogicBot extends TypedEvent<IBotEvent>{
     private token: string;
@@ -17,6 +18,9 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
     private defaultBotMap: Map<string, PhysicalBot[]> = new Map();
     //分配id与bot的对应关系
     private idBotMap: Map<number, PhysicalBot> = new Map();
+    //defaultPrivateMap记录每个私聊用户的默认botId
+    //数据量较大，使用Object提升效率
+    private defaultPrivateBotMap: { [K: string]: number } = Object.create({});
 
     constructor(token: string){
         super();
@@ -75,9 +79,20 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
 
     //具体的处理event的方法
     private procEvent(e: IBotEvent): void{
+
+        this.createDefaultPrivateMap(e);
+
         let shouldEmit = this.shouldEventEmit(e);
         if(shouldEmit){
             this.emit(this.addToken(e));
+        }
+    }
+
+    //被动生成默认的用户-bot对应表
+    //先创建的会被后创建的覆盖
+    private createDefaultPrivateMap(e: IBotEvent): void{
+        if(e.type === 'group-message' || e.type === 'private-message'){
+            this.defaultPrivateBotMap[e.data.sender.user_id] = e.botId;
         }
     }
 
@@ -150,5 +165,33 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
         bot.on('close', (bot: PhysicalBot) => {
             this.unsetBot(bot);
         });
+    }
+
+    public async sendGroupMsg(target: string, msg: IStructMessageItem[]): Promise<ISendMessageResponse>{
+        let bots = this.defaultBotMap.get(target);
+        if(bots && bots.length > 0){
+            let bot = bots[0];
+            return await bot.sendGroupMsg(target, msg);
+        }
+        else{
+            this.Logger.error(`发送群消息失败：群 ${target} 没有可用的Bot.`);
+            return { success: false };
+        }
+    }
+
+    public async sendPrivateMsg(target: string, msg: IStructMessageItem[], botId?: number): Promise<ISendMessageResponse>{
+        let bId = botId || this.defaultPrivateBotMap[target];
+        if(!bId) {
+            this.Logger.error(`发送消息失败：${target} 没有可用的Bot.`);
+            return { success: false };
+        }
+
+        let bot = this.idBotMap.get(bId);
+        if(!bot){
+            this.Logger.error(`发送消息失败：${bId} 不存在.`);
+            return { success: false };
+        }
+
+        return await bot.sendGroupMsg(target, msg);
     }
 }

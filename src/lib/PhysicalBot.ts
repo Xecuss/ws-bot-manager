@@ -5,6 +5,7 @@
 import Websocket from 'ws';
 import { IBotDriver } from '../interface/IBotDriver';
 import { EventEmitter } from 'events';
+import { IStructMessageItem, ISendMessageResponse } from '../interface/IBotMessage';
 
 export default class PhysicalBot extends EventEmitter{
     private connection: Websocket;
@@ -57,5 +58,13 @@ export default class PhysicalBot extends EventEmitter{
 
     private async onCloseHandle(e: Websocket.CloseEvent): Promise<void>{
         this.emit('close', this);
+    }
+
+    public async sendGroupMsg(target: string, msg: IStructMessageItem[]): Promise<ISendMessageResponse>{
+        return await this.driver.sendGroupMsg(this.connection, target, msg);
+    }
+
+    public async sendPrivatepMsg(target: string, msg: IStructMessageItem[]): Promise<ISendMessageResponse>{
+        return await this.driver.sendPrivateMsg(this.connection, target, msg);
     }
 }
