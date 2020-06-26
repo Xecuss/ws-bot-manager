@@ -8,6 +8,7 @@ import PhysicalBot from './lib/PhysicalBot';
 
 import { IBotInnerEvent } from './interface/IBotInnerEvent';
 import { IGroupMsgEvent, IPrivateMsgEvent, IBotGroupListChangeEvent } from './interface/IBotEvent';
+import { ISendMessageResponse, IStructMessageItem } from './interface/IBotMessage';
 
 const driverList: Array<IBotDriver> = [];
 const loadedDriver: Set<string> = new Set();
@@ -138,5 +139,23 @@ export default class BotManager{
 
     public listen(){
         this.httpServer.listen(this.port);
+    }
+
+    public async sendGroupMsg(token: string, target: string, msg: IStructMessageItem[]): Promise<ISendMessageResponse>{
+        let bot = this.tokenMap.get(token);
+        if(!bot){
+            this.Logger.error(`发送群消息失败：逻辑bot ${token} 不存在`);
+            return { success: false };
+        }
+        return await bot.sendGroupMsg(target, msg);
+    }
+
+    public async sendPrivateMsg(token: string, target: string, msg: IStructMessageItem[], botId?: number): Promise<ISendMessageResponse>{
+        let bot = this.tokenMap.get(token);
+        if(!bot){
+            this.Logger.error(`发送群消息失败：逻辑bot ${token} 不存在`);
+            return { success: false };
+        }
+        return await bot.sendPrivateMsg(target, msg, botId);
     }
 }
