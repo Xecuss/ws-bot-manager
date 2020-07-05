@@ -7,7 +7,6 @@ import LogicBot from './lib/LogicBot';
 import PhysicalBot from './lib/PhysicalBot';
 
 import { IBotInnerEvent } from './interface/IBotInnerEvent';
-import { IGroupMsgEvent, IPrivateMsgEvent, IBotGroupListChangeEvent } from './interface/IBotEvent';
 import { ISendMessageResponse, IStructMessageItem } from './interface/IBotMessage';
 
 const driverList: Array<IBotDriver> = [];
@@ -23,7 +22,7 @@ async function loadDriver(list: string[]){
     }
 }
 
-export default class BotManager{
+export default class BotManager extends TypedEvent<IBotInnerEvent>{
     private s: Websocket.Server;
     private httpServer: http.Server;
     private argVerify: (req: http.IncomingMessage) => boolean;
@@ -32,13 +31,8 @@ export default class BotManager{
     private tokenMap: Map<string, LogicBot> = new Map();
     private Logger: IBotManagerConsole;
 
-    //event emitter
-    public innerEventEmitter = new TypedEvent<IBotInnerEvent>();
-    public groupMsgEmitter = new TypedEvent<IGroupMsgEvent>();
-    public privateMsgEmitter = new TypedEvent<IPrivateMsgEvent>();
-    public groupListChangeEmitter = new TypedEvent<IBotGroupListChangeEvent>();
-
     constructor(args: IBotManagerConfig){
+        super();
         //加载驱动
         loadDriver(args.drivers);
         //创建一个自定义的http Server以实现延后的监听
@@ -90,26 +84,6 @@ export default class BotManager{
         });
     }
 
-    //分离具体类型的Event
-    private bindLogicBotEvent(bot: LogicBot){
-        bot.on((e) => {
-            switch(e.type){
-                case 'group-message': {
-                    this.groupMsgEmitter.emit(e);
-                    break;
-                }
-                case 'private-message': {
-                    this.privateMsgEmitter.emit(e);
-                    break;
-                }
-                case 'bot-group-list-change': {
-                    this.groupListChangeEmitter.emit(e);
-                    break;
-                }
-                default: { let checkUp: never; }
-            }
-        });
-    }
 
     private allocBot(req: http.IncomingMessage): LogicBot{
         let res = this.getGroup(req);
@@ -122,14 +96,12 @@ export default class BotManager{
             this.tokenMap.set(token, logicbot);
 
             //分配新bot时产生bot-connect事件
-            this.innerEventEmitter.emit({
+            this.emit({
                 type: 'bot-connect',
                 token: logicbot.getToken()
             });
 
             logicbot.setLogger(this.Logger);
-
-            this.bindLogicBotEvent(logicbot);
 
             return logicbot;
         };
@@ -141,8 +113,12 @@ export default class BotManager{
         this.httpServer.listen(this.port);
     }
 
+    public getBot(token: string){
+        return this.tokenMap.get(token);
+    }
+
     public async sendGroupMsg(token: string, target: string, msg: IStructMessageItem[]): Promise<ISendMessageResponse>{
-        let bot = this.tokenMap.get(token);
+        let bot = this.getBot(token);
         if(!bot){
             this.Logger.error(`发送群消息失败：逻辑bot ${token} 不存在`);
             return { success: false };
@@ -151,7 +127,7 @@ export default class BotManager{
     }
 
     public async sendPrivateMsg(token: string, target: string, msg: IStructMessageItem[], botId?: number): Promise<ISendMessageResponse>{
-        let bot = this.tokenMap.get(token);
+        let bot = this.getBot(token);
         if(!bot){
             this.Logger.error(`发送群消息失败：逻辑bot ${token} 不存在`);
             return { success: false };

@@ -5,10 +5,11 @@
 import PhysicalBot from './PhysicalBot';
 import { TypedEvent } from './TypedEvent';
 import { IBotManagerConsole } from '../interface/IBotManagerConfig';
-import { IBotEvent, IBotGroupChangeData, IBotGroupListChangeEvent } from '../interface/IBotEvent';
+import { IBotEvent, IBotGroupChangeData } from '../interface/IBotEvent';
+import { IGroupMsgEvent, IPrivateMsgEvent, IBotGroupListChangeEvent } from '../interface/IBotEvent';
 import { IStructMessageItem, ISendMessageResponse } from '../interface/IBotMessage';
 
-export default class LogicBot extends TypedEvent<IBotEvent>{
+export default class LogicBot{
     private token: string;
     //phyId为每个物理bot分配的id
     static phyId = 1;
@@ -22,8 +23,12 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
     //数据量较大，使用Object提升效率
     private defaultPrivateBotMap: { [K: string]: number } = Object.create({});
 
+    //Event
+    public groupMsgEmitter = new TypedEvent<IGroupMsgEvent>();
+    public privateMsgEmitter = new TypedEvent<IPrivateMsgEvent>();
+    public groupListChangeEmitter = new TypedEvent<IBotGroupListChangeEvent>();
+
     constructor(token: string){
-        super();
         this.token = token;
     }
 
@@ -72,7 +77,7 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
         return false;
     }
 
-    private addToken(e: IBotEvent): IBotEvent{
+    private addToken<E extends IBotEvent>(e: E): E{
         e.token = this.token;
         return e;
     }
@@ -84,7 +89,23 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
 
         let shouldEmit = this.shouldEventEmit(e);
         if(shouldEmit){
-            this.emit(this.addToken(e));
+            //添加token 分离具体类型的Event
+            let event = this.addToken(e);
+            switch(event.type){
+                case 'group-message': {
+                    this.groupMsgEmitter.emit(event);
+                    break;
+                }
+                case 'private-message': {
+                    this.privateMsgEmitter.emit(event);
+                    break;
+                }
+                case 'bot-group-list-change': {
+                    this.groupListChangeEmitter.emit(event);
+                    break;
+                }
+                default: { let checkUp: never; }
+            }
         }
     }
 
@@ -125,7 +146,7 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
             data: groupChangeList
         };
 
-        this.emit(this.addToken(e));
+        this.groupListChangeEmitter.emit(this.addToken(e));
     }
 
     public async setBot(bot: PhysicalBot): Promise<void> {
@@ -159,7 +180,7 @@ export default class LogicBot extends TypedEvent<IBotEvent>{
             type: 'bot-group-list-change',
             data: groupChangeList
         };
-        this.emit(this.addToken(e));
+        this.groupListChangeEmitter.emit(this.addToken(e));
         //绑定botEvent
         bot.on('event', this.procEvent.bind(this));
         bot.on('close', (bot: PhysicalBot) => {
