@@ -19,7 +19,7 @@ let bot = new BotManager({
     drivers: ['./driver/test.driver']
 });
 
-bot.innerEventEmitter.on(e => {
+bot.on(e => {
     if(e.type === 'bot-connect'){
         console.log(`新的逻辑bot(${e.token})创建`);
         mainToken = e.token;
